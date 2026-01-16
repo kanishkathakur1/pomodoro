@@ -28,18 +28,22 @@ cd pomodoro
 go build -o pomodoro .
 ```
 
+Run the binary you just built:
+
+```bash
+./pomodoro
+```
+
 ### Go Install
 
 ```bash
 go install github.com/kanishkathakur1/pomodoro@latest
 ```
 
-Ensure your `$(go env GOPATH)/bin` is in `PATH`, then run `pomodoro`.
-
-### Run
+Ensure your `$(go env GOPATH)/bin` is in `PATH`, then run:
 
 ```bash
-./pomodoro
+pomodoro
 ```
 
 ## Usage
