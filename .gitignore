@@ -1,0 +1,31 @@
+# Binary
+pomodoro
+
+# Test coverage
+coverage.out
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Go build cache (usually not in project dir, but just in case)
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Dependency directories (if vendoring)
+vendor/
+
+# Debug files
+*.log
+debug
