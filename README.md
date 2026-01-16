@@ -78,7 +78,7 @@ system_notification = true # Desktop notification
 
 ## Screenshots
 
-<!-- Add screenshots here -->
+![Short Break Timer](assets/short-break.png)
 
 ## Tech Stack
 
