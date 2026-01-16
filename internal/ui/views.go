@@ -75,7 +75,14 @@ func RenderTimer(t *timer.Timer, width, height int, paused bool) string {
 	content.WriteString("\n\n")
 
 	// Session counter
-	sessionInfo := fmt.Sprintf("Pomodoro %d/%d", t.PomodoroCount, timer.PomodorosBeforeLongBreak)
+	pomodoroCount := t.PomodoroCount
+	if t.SessionType == timer.LongBreak {
+		pomodoroCount = timer.PomodorosBeforeLongBreak
+	}
+	if pomodoroCount < 0 {
+		pomodoroCount = 0
+	}
+	sessionInfo := fmt.Sprintf("Pomodoro %d/%d", pomodoroCount, timer.PomodorosBeforeLongBreak)
 	if t.SessionType == timer.Work {
 		if t.PomodoroCount >= timer.PomodorosBeforeLongBreak {
 			sessionInfo += " • Long break next!"

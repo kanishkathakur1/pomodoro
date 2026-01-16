@@ -364,9 +364,9 @@ func TestGetCompletedSession(t *testing.T) {
 			expected:       timer.Work,
 		},
 		{
-			name:           "now in work (count 1), completed long break",
+			name:           "now in work (count 0), completed long break",
 			currentSession: timer.Work,
-			pomodoroCount:  1,
+			pomodoroCount:  0,
 			expected:       timer.LongBreak,
 		},
 		{
@@ -435,6 +435,6 @@ func TestModel_InitialState(t *testing.T) {
 
 	require.NotNil(t, m.Timer)
 	assert.Equal(t, timer.Work, m.Timer.SessionType)
-	assert.Equal(t, 1, m.Timer.PomodoroCount)
+	assert.Equal(t, 0, m.Timer.PomodoroCount)
 	assert.False(t, m.Timer.Running)
 }

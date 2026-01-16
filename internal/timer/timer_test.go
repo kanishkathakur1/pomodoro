@@ -15,7 +15,7 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, WorkDuration, timer.Duration, "initial duration should be WorkDuration")
 	assert.Equal(t, WorkDuration, timer.Remaining, "initial remaining should be WorkDuration")
 	assert.False(t, timer.Running, "timer should not be running initially")
-	assert.Equal(t, 1, timer.PomodoroCount, "initial pomodoro count should be 1")
+	assert.Equal(t, 0, timer.PomodoroCount, "initial pomodoro count should be 0")
 	assert.Equal(t, 0, timer.TotalPomodoros, "initial total pomodoros should be 0")
 }
 
@@ -221,7 +221,7 @@ func TestCompleteSession(t *testing.T) {
 		{
 			name:                   "work to short break (pomodoro 1)",
 			initialSession:         Work,
-			initialPomodoroCount:   1,
+			initialPomodoroCount:   0,
 			initialTotalPomodoros:  0,
 			expectedSession:        ShortBreak,
 			expectedDuration:       ShortBreakDuration,
@@ -231,7 +231,7 @@ func TestCompleteSession(t *testing.T) {
 		{
 			name:                   "work to short break (pomodoro 2)",
 			initialSession:         Work,
-			initialPomodoroCount:   2,
+			initialPomodoroCount:   1,
 			initialTotalPomodoros:  1,
 			expectedSession:        ShortBreak,
 			expectedDuration:       ShortBreakDuration,
@@ -241,7 +241,7 @@ func TestCompleteSession(t *testing.T) {
 		{
 			name:                   "work to short break (pomodoro 3)",
 			initialSession:         Work,
-			initialPomodoroCount:   3,
+			initialPomodoroCount:   2,
 			initialTotalPomodoros:  2,
 			expectedSession:        ShortBreak,
 			expectedDuration:       ShortBreakDuration,
@@ -251,13 +251,14 @@ func TestCompleteSession(t *testing.T) {
 		{
 			name:                   "work to long break (pomodoro 4)",
 			initialSession:         Work,
-			initialPomodoroCount:   4,
+			initialPomodoroCount:   3,
 			initialTotalPomodoros:  3,
 			expectedSession:        LongBreak,
 			expectedDuration:       LongBreakDuration,
 			expectedPomodoroCount:  0,
 			expectedTotalPomodoros: 4,
 		},
+
 		{
 			name:                   "short break to work",
 			initialSession:         ShortBreak,
@@ -265,7 +266,7 @@ func TestCompleteSession(t *testing.T) {
 			initialTotalPomodoros:  1,
 			expectedSession:        Work,
 			expectedDuration:       WorkDuration,
-			expectedPomodoroCount:  2,
+			expectedPomodoroCount:  1,
 			expectedTotalPomodoros: 1,
 		},
 		{
@@ -275,7 +276,7 @@ func TestCompleteSession(t *testing.T) {
 			initialTotalPomodoros:  4,
 			expectedSession:        Work,
 			expectedDuration:       WorkDuration,
-			expectedPomodoroCount:  1,
+			expectedPomodoroCount:  0,
 			expectedTotalPomodoros: 4,
 		},
 	}
@@ -308,15 +309,26 @@ func TestSkip(t *testing.T) {
 		initialPomodoroCount   int
 		initialTotalPomodoros  int
 		expectedSession        SessionType
+		expectedPomodoroCount  int
 		expectedTotalPomodoros int
 	}{
 		{
-			name:                   "skip work session does not increment total",
+			name:                   "skip work session counts toward cycle",
 			initialSession:         Work,
-			initialPomodoroCount:   1,
+			initialPomodoroCount:   0,
 			initialTotalPomodoros:  0,
 			expectedSession:        ShortBreak,
-			expectedTotalPomodoros: 0, // Should NOT increment on skip
+			expectedPomodoroCount:  1,
+			expectedTotalPomodoros: 1,
+		},
+		{
+			name:                   "skip work session triggers long break",
+			initialSession:         Work,
+			initialPomodoroCount:   3,
+			initialTotalPomodoros:  3,
+			expectedSession:        LongBreak,
+			expectedPomodoroCount:  0,
+			expectedTotalPomodoros: 4,
 		},
 		{
 			name:                   "skip short break",
@@ -324,6 +336,7 @@ func TestSkip(t *testing.T) {
 			initialPomodoroCount:   1,
 			initialTotalPomodoros:  1,
 			expectedSession:        Work,
+			expectedPomodoroCount:  1,
 			expectedTotalPomodoros: 1,
 		},
 		{
@@ -332,6 +345,7 @@ func TestSkip(t *testing.T) {
 			initialPomodoroCount:   0,
 			initialTotalPomodoros:  4,
 			expectedSession:        Work,
+			expectedPomodoroCount:  0,
 			expectedTotalPomodoros: 4,
 		},
 	}
@@ -346,6 +360,7 @@ func TestSkip(t *testing.T) {
 			timer.Skip()
 
 			assert.Equal(t, tt.expectedSession, timer.SessionType)
+			assert.Equal(t, tt.expectedPomodoroCount, timer.PomodoroCount)
 			assert.Equal(t, tt.expectedTotalPomodoros, timer.TotalPomodoros)
 			assert.False(t, timer.Running)
 		})
@@ -478,38 +493,41 @@ func TestFullPomodoroCycle(t *testing.T) {
 	timer := New()
 
 	require.Equal(t, Work, timer.SessionType)
-	require.Equal(t, 1, timer.PomodoroCount)
+	require.Equal(t, 0, timer.PomodoroCount)
 	require.Equal(t, 0, timer.TotalPomodoros)
 
 	// Complete first work session
 	timer.CompleteSession()
 	assert.Equal(t, ShortBreak, timer.SessionType)
 	assert.Equal(t, 1, timer.TotalPomodoros)
+	assert.Equal(t, 1, timer.PomodoroCount)
+
+	// Complete short break
+	timer.CompleteSession()
+	assert.Equal(t, Work, timer.SessionType)
+	assert.Equal(t, 1, timer.PomodoroCount)
+
+	// Complete second work session
+	timer.CompleteSession()
+	assert.Equal(t, ShortBreak, timer.SessionType)
+	assert.Equal(t, 2, timer.TotalPomodoros)
+	assert.Equal(t, 2, timer.PomodoroCount)
 
 	// Complete short break
 	timer.CompleteSession()
 	assert.Equal(t, Work, timer.SessionType)
 	assert.Equal(t, 2, timer.PomodoroCount)
 
-	// Complete second work session
+	// Complete third work session
 	timer.CompleteSession()
 	assert.Equal(t, ShortBreak, timer.SessionType)
-	assert.Equal(t, 2, timer.TotalPomodoros)
+	assert.Equal(t, 3, timer.TotalPomodoros)
+	assert.Equal(t, 3, timer.PomodoroCount)
 
 	// Complete short break
 	timer.CompleteSession()
 	assert.Equal(t, Work, timer.SessionType)
 	assert.Equal(t, 3, timer.PomodoroCount)
-
-	// Complete third work session
-	timer.CompleteSession()
-	assert.Equal(t, ShortBreak, timer.SessionType)
-	assert.Equal(t, 3, timer.TotalPomodoros)
-
-	// Complete short break
-	timer.CompleteSession()
-	assert.Equal(t, Work, timer.SessionType)
-	assert.Equal(t, 4, timer.PomodoroCount)
 
 	// Complete fourth work session - should trigger long break
 	timer.CompleteSession()
@@ -521,7 +539,7 @@ func TestFullPomodoroCycle(t *testing.T) {
 	// Complete long break - back to work, reset count
 	timer.CompleteSession()
 	assert.Equal(t, Work, timer.SessionType)
-	assert.Equal(t, 1, timer.PomodoroCount)
+	assert.Equal(t, 0, timer.PomodoroCount)
 	assert.Equal(t, 4, timer.TotalPomodoros)
 }
 
@@ -537,7 +555,7 @@ func TestNextSession(t *testing.T) {
 		{
 			name:                   "work to short break (not at 4)",
 			initialSession:         Work,
-			initialPomodoroCount:   1,
+			initialPomodoroCount:   0,
 			expectedSession:        ShortBreak,
 			expectedPomodoroCount:  1,
 			expectedTotalPomodoros: 1, // NextSession increments total
@@ -545,9 +563,9 @@ func TestNextSession(t *testing.T) {
 		{
 			name:                   "work to long break (at 4)",
 			initialSession:         Work,
-			initialPomodoroCount:   4,
+			initialPomodoroCount:   3,
 			expectedSession:        LongBreak,
-			expectedPomodoroCount:  4,
+			expectedPomodoroCount:  0,
 			expectedTotalPomodoros: 1,
 		},
 		{
@@ -555,15 +573,15 @@ func TestNextSession(t *testing.T) {
 			initialSession:         ShortBreak,
 			initialPomodoroCount:   1,
 			expectedSession:        Work,
-			expectedPomodoroCount:  2,
+			expectedPomodoroCount:  1,
 			expectedTotalPomodoros: 0,
 		},
 		{
 			name:                   "long break to work",
 			initialSession:         LongBreak,
-			initialPomodoroCount:   4,
+			initialPomodoroCount:   0,
 			expectedSession:        Work,
-			expectedPomodoroCount:  1,
+			expectedPomodoroCount:  0,
 			expectedTotalPomodoros: 0,
 		},
 	}

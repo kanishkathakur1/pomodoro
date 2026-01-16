@@ -29,3 +29,6 @@ vendor/
 # Debug files
 *.log
 debug
+
+# AI files
+.claude/

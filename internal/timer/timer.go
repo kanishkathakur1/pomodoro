@@ -16,32 +16,33 @@ const (
 
 // Standard Pomodoro durations
 const (
-	WorkDuration       = 25 * time.Minute
-	ShortBreakDuration = 5 * time.Minute
-	LongBreakDuration  = 15 * time.Minute
+	WorkDuration             = 25 * time.Minute
+	ShortBreakDuration       = 5 * time.Minute
+	LongBreakDuration        = 15 * time.Minute
 	PomodorosBeforeLongBreak = 4
 )
 
 // Timer represents the pomodoro timer state
 type Timer struct {
-	SessionType     SessionType
-	Duration        time.Duration
-	Remaining       time.Duration
-	Running         bool
-	PomodoroCount   int // Current pomodoro number in the set (1-4)
-	TotalPomodoros  int // Total pomodoros completed
+	SessionType    SessionType
+	Duration       time.Duration
+	Remaining      time.Duration
+	Running        bool
+	PomodoroCount  int // Completed work sessions in the current cycle (0-4)
+	TotalPomodoros int // Total pomodoros completed
 }
 
 // New creates a new timer starting with a work session
 func New() *Timer {
 	return &Timer{
-		SessionType:   Work,
-		Duration:      WorkDuration,
-		Remaining:     WorkDuration,
-		Running:       false,
-		PomodoroCount: 1,
+		SessionType:    Work,
+		Duration:       WorkDuration,
+		Remaining:      WorkDuration,
+		Running:        false,
+		PomodoroCount:  0,
 		TotalPomodoros: 0,
 	}
+
 }
 
 // Start begins the timer
@@ -88,7 +89,8 @@ func (t *Timer) Progress() float64 {
 
 // Skip moves to the next session without completing the current one
 func (t *Timer) Skip() {
-	t.completeSession(false)
+	countWork := t.SessionType == Work
+	t.completeSession(countWork)
 }
 
 // CompleteSession handles the transition to the next session
@@ -96,35 +98,29 @@ func (t *Timer) CompleteSession() {
 	t.completeSession(true)
 }
 
-func (t *Timer) completeSession(wasCompleted bool) {
-	// If completing a work session, increment pomodoro count
-	if t.SessionType == Work && wasCompleted {
+func (t *Timer) completeSession(countWork bool) {
+	if t.SessionType == Work && countWork {
 		t.TotalPomodoros++
+		t.PomodoroCount++
 	}
 
-	// Determine next session
 	switch t.SessionType {
 	case Work:
-		if wasCompleted && t.PomodoroCount >= PomodorosBeforeLongBreak {
-			// Time for a long break
+		if t.PomodoroCount >= PomodorosBeforeLongBreak {
 			t.SessionType = LongBreak
 			t.Duration = LongBreakDuration
-			t.PomodoroCount = 0 // Reset after long break
+			t.PomodoroCount = 0
 		} else {
-			// Short break
 			t.SessionType = ShortBreak
 			t.Duration = ShortBreakDuration
 		}
 	case ShortBreak:
-		// Back to work after short break
 		t.SessionType = Work
 		t.Duration = WorkDuration
-		t.PomodoroCount++
 	case LongBreak:
-		// Back to work after long break, reset count
 		t.SessionType = Work
 		t.Duration = WorkDuration
-		t.PomodoroCount = 1
+		// PomodoroCount remains at 0 after long break.
 	}
 
 	t.Remaining = t.Duration
@@ -133,29 +129,28 @@ func (t *Timer) completeSession(wasCompleted bool) {
 
 // NextSession prepares for the next session (called after user confirmation)
 func (t *Timer) NextSession() {
-	// Determine next session
+	if t.SessionType == Work {
+		t.TotalPomodoros++
+		t.PomodoroCount++
+	}
+
 	switch t.SessionType {
 	case Work:
 		if t.PomodoroCount >= PomodorosBeforeLongBreak {
-			// Time for a long break
 			t.SessionType = LongBreak
 			t.Duration = LongBreakDuration
+			t.PomodoroCount = 0
 		} else {
-			// Short break
 			t.SessionType = ShortBreak
 			t.Duration = ShortBreakDuration
 		}
-		t.TotalPomodoros++
 	case ShortBreak:
-		// Back to work
 		t.SessionType = Work
 		t.Duration = WorkDuration
-		t.PomodoroCount++
 	case LongBreak:
-		// Back to work, reset count
 		t.SessionType = Work
 		t.Duration = WorkDuration
-		t.PomodoroCount = 1
+		// PomodoroCount remains at 0 after long break.
 	}
 
 	t.Remaining = t.Duration

@@ -270,7 +270,7 @@ func getCompletedSession(t *timer.Timer) timer.SessionType {
 	switch t.SessionType {
 	case timer.Work:
 		// If we're now in Work, we just completed a break
-		if t.PomodoroCount == 1 {
+		if t.PomodoroCount == 0 {
 			return timer.LongBreak
 		}
 		return timer.ShortBreak

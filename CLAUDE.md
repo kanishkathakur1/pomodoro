@@ -54,15 +54,17 @@ The app follows the Elm architecture with three main methods:
 
 ### View States
 ```go
-ViewSplash   // Animated splash screen (1.6s)
+ViewSplash   // Animated splash screen (waits for keypress)
 ViewTimer    // Main countdown view
 ViewComplete // Session complete, prompt for next
 ```
 
 ### Session Flow
 1. Work (25 min) → Short Break (5 min) → Work → Short Break → ...
-2. After 4 work sessions → Long Break (15 min)
-3. Cycle repeats
+2. After 4 completed/skipped work sessions → Long Break (15 min)
+3. Cycle repeats (counter resets to 0 after long break)
+
+**Pomodoro Count Semantics:** `PomodoroCount` represents completed work sessions in the current cycle (0–4). Skipping a work session counts toward the cycle. During long break, UI displays "4/4" until the next work session begins.
 
 ## Module Responsibilities
 
@@ -136,6 +138,9 @@ go build -o pomodoro .
 1. **Timer durations are constants** (`internal/timer/timer.go:18-22`)
 2. **Colors are defined in styles.go** - use existing palette, don't add new colors
 3. **Session transitions** happen in `timer.completeSession()` and `timer.NextSession()`
+   - `PomodoroCount` tracks completed work sessions (0–4), not current session index
+   - Skipping work sessions increments the count
+   - Long break triggers when count reaches 4; count resets to 0 when long break starts
 4. **Window resizing** is handled via `tea.WindowSizeMsg` in Update
 5. **Notifications** check config flags before firing
 

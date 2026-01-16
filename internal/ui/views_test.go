@@ -132,6 +132,16 @@ func TestRenderTimer_BreakShowsWorkNext(t *testing.T) {
 	assert.Contains(t, result, "Work session next")
 }
 
+func TestRenderTimer_LongBreakShowsFullCount(t *testing.T) {
+	tmr := timer.New()
+	tmr.SessionType = timer.LongBreak
+	tmr.PomodoroCount = 0
+
+	result := RenderTimer(tmr, 80, 24, false)
+
+	assert.Contains(t, result, "Pomodoro 4/4")
+}
+
 func TestRenderTimer_NarrowWidth(t *testing.T) {
 	tmr := timer.New()
 
