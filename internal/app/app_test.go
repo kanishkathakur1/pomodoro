@@ -80,17 +80,18 @@ func TestUpdate_SplashTickMsg(t *testing.T) {
 	assert.NotNil(t, cmd, "should return another splash tick command")
 }
 
-func TestUpdate_SplashTickMsg_TransitionsToTimer(t *testing.T) {
+func TestUpdate_SplashTickMsg_DoesNotTransition(t *testing.T) {
 	m := newTestModel()
 	m.CurrentView = ViewSplash
-	m.SplashFrame = 7 // One before transition
+	m.SplashFrame = 7
 
 	msg := SplashTickMsg(time.Now())
-	result, _ := m.Update(msg)
+	result, cmd := m.Update(msg)
 	model := result.(Model)
 
 	assert.Equal(t, 8, model.SplashFrame)
-	assert.Equal(t, ViewTimer, model.CurrentView, "should transition to timer after 8 frames")
+	assert.Equal(t, ViewSplash, model.CurrentView, "splash should remain until key press")
+	assert.NotNil(t, cmd, "should continue splash animation")
 }
 
 func TestUpdate_SplashTickMsg_IgnoredWhenNotInSplash(t *testing.T) {

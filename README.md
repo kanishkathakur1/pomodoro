@@ -5,12 +5,16 @@ A beautiful neon/cyberpunk-styled terminal Pomodoro timer written in Go.
 ## Features
 
 - Large ASCII countdown display
-- Animated splash screen
+- Animated splash screen (press any key to start)
 - Progress bar visualization
 - Configurable notifications (visual flash, terminal bell, system notifications)
 - Responsive terminal sizing
 - Standard Pomodoro timing (25/5/15 minutes)
 - Session tracking (4 pomodoros before long break)
+
+## Warning
+
+This app uses a flashing visual notification when sessions complete. If you are sensitive to flashing lights, disable `visual_flash` in the configuration before using the app.
 
 ## Installation
 

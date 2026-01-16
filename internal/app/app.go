@@ -98,11 +98,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case SplashTickMsg:
 		if m.CurrentView == ViewSplash {
 			m.SplashFrame++
-			// After 8 frames (1.6s), transition to timer
-			if m.SplashFrame >= 8 {
-				m.CurrentView = ViewTimer
-				return m, nil
-			}
 			return m, splashTick()
 		}
 		return m, nil
