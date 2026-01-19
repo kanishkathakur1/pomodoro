@@ -72,7 +72,7 @@ ViewComplete // Session complete, prompt for next
 |--------|-----------|---------|
 | `app` | `Model`, `KeyMap` | Orchestrates views, handles input |
 | `timer` | `Timer`, `SessionType` | Timer logic, session transitions |
-| `config` | `Config`, `NotificationConfig` | Loads/saves `~/.config/pomodoro/config.toml` |
+| `config` | `Config`, `NotificationConfig` | Loads/saves config via `os.UserConfigDir()` |
 | `ui` | Various render functions | All visual rendering |
 | `notify` | `Notifier` | Triggers notifications based on config |
 
@@ -89,7 +89,10 @@ ViewComplete // Session complete, prompt for next
 
 ## Configuration
 
-**Path:** `~/.config/pomodoro/config.toml` (XDG standard via `os.UserConfigDir()`)
+**Path:** OS config directory via `os.UserConfigDir()`:
+- macOS: `~/Library/Application Support/pomodoro/config.toml`
+- Linux: `~/.config/pomodoro/config.toml`
+- Windows: `%AppData%\pomodoro\config.toml`
 
 ```toml
 [notifications]
