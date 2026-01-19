@@ -71,7 +71,10 @@ Launch the app and use keyboard controls to manage your focus sessions.
 
 ## Configuration
 
-Configuration is stored at `~/.config/pomodoro/config.toml` and is created automatically on first run.
+Configuration is stored at your OS config directory and is created automatically on first run:
+- **macOS**: `~/Library/Application Support/pomodoro/config.toml`
+- **Linux**: `~/.config/pomodoro/config.toml`
+- **Windows**: `%AppData%\pomodoro\config.toml`
 
 ```toml
 [notifications]
